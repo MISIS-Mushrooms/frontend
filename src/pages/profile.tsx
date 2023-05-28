@@ -70,6 +70,11 @@ const Page: PageType = () => {
 
       const response = await activitiesApi.identify(identityPart);
 
+      setSearchFilters((searchFilters) => ({
+        ...searchFilters,
+        healthProblems: formik.values.healthProblems,
+      }));
+
       setUserIdentity({
         ...identityPart,
         type: "authenticated",
@@ -223,7 +228,12 @@ const Page: PageType = () => {
               <FormGroup sx={{ pl: 1 }}>
                 <FormControlLabel
                   control={
-                    <Checkbox {...formik.getFieldProps("healthProblems")} />
+                    <Checkbox
+                      name="healthProblems"
+                      onBlur={formik.handleBlur}
+                      onChange={formik.handleChange}
+                      checked={formik.values.healthProblems}
+                    />
                   }
                   label="Есть ограничения по здоровью"
                 />
