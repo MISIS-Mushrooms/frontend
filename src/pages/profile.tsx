@@ -16,7 +16,12 @@ import { useFormik } from "formik";
 import { useSetAtom } from "jotai";
 import { useRouter } from "next/router";
 import { activitiesApi } from "src/api/activities";
-import { searchFiltersAtom, userIdentityAtom } from "src/atoms";
+import {
+  friendIdentitiesAtom,
+  onboardingAtom,
+  searchFiltersAtom,
+  userIdentityAtom,
+} from "src/atoms";
 import { Seo } from "src/components/seo";
 import { WarningStripes } from "src/components/warning-stripes";
 import Calendar from "src/icons/untitled-ui/duocolor/calendar";
@@ -54,7 +59,9 @@ const validationSchema = Yup.object({
 const Page: PageType = () => {
   const router = useRouter();
   const setUserIdentity = useSetAtom(userIdentityAtom);
+  const setFriendIdentities = useSetAtom(friendIdentitiesAtom);
   const setSearchFilters = useSetAtom(searchFiltersAtom);
+  const setOnboarding = useSetAtom(onboardingAtom);
   const formik = useFormik({
     initialValues,
     validationSchema,
@@ -74,6 +81,12 @@ const Page: PageType = () => {
         ...searchFilters,
         healthProblems: formik.values.healthProblems,
       }));
+
+      setOnboarding({
+        categories: [],
+      });
+
+      setFriendIdentities({});
 
       setUserIdentity({
         ...identityPart,
@@ -106,6 +119,12 @@ const Page: PageType = () => {
       ...searchFilters,
       healthProblems: formik.values.healthProblems,
     }));
+
+    setOnboarding({
+      categories: [],
+    });
+
+    setFriendIdentities({});
 
     setUserIdentity({
       ...identityPart,
