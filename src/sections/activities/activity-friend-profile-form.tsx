@@ -17,7 +17,7 @@ import { friendIdentitiesAtom, searchFiltersAtom } from "src/atoms";
 import { ButtonLikeFormControlLabel } from "src/components/button-like-form-control-label";
 import { WarningStripes } from "src/components/warning-stripes";
 import Calendar from "src/icons/untitled-ui/duocolor/calendar";
-import { formatName } from "src/utils/format-name";
+import { formatPersonName } from "src/utils/formatting";
 import * as Yup from "yup";
 
 interface Values {
@@ -186,7 +186,7 @@ export const ActivityFriendProfileForm = () => {
                   onChange={handleChange}
                 />
               }
-              label={formatName(
+              label={formatPersonName(
                 friend.lastName,
                 friend.firstName,
                 friend.middleName ?? undefined,

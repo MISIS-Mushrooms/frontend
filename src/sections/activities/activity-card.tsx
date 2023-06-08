@@ -18,7 +18,12 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { FC, Fragment } from "react";
 import type { Activity, ActivityVariant } from "src/types/activity";
-import { formatArea } from "../../utils/format-area";
+import {
+  formatActivityDay,
+  formatActivityTime,
+  formatActivityTitle,
+  formatArea,
+} from "../../utils/formatting";
 
 interface ActivityCardProps {
   activity?: Activity;
@@ -31,10 +36,9 @@ export const ActivityCard: FC<ActivityCardProps> = (props) => {
     <Stack component={Card} direction="row" {...other}>
       {activity ? (
         <Image
-          src={`/assets/activities/${formatTitle(activity.category3).replaceAll(
-            "/",
-            "_",
-          )}.png`}
+          src={`/assets/activities/${formatActivityTitle(
+            activity.category3,
+          ).replaceAll("/", "_")}.png`}
           width={200}
           height={100}
           style={{ objectFit: "cover" }}
@@ -62,7 +66,7 @@ export const ActivityCard: FC<ActivityCardProps> = (props) => {
                 href={"https://www.mos.ru/dolgoletie-app-ts/#"}
               >
                 {activity ? (
-                  formatTitle(activity.category3)
+                  formatActivityTitle(activity.category3)
                 ) : (
                   <Skeleton animation="wave" width="30ch" />
                 )}
@@ -84,27 +88,27 @@ export const ActivityCard: FC<ActivityCardProps> = (props) => {
                 )}
                 {activity.tags.category === "mind" && (
                   <Grid>
-                    <MindChip />
+                    <ForMindChip />
                   </Grid>
                 )}
                 {activity.tags.category === "soul" && (
                   <Grid>
-                    <SoulChip />
+                    <ForSoulChip />
                   </Grid>
                 )}
                 {activity.tags.category === "body" && (
                   <Grid>
-                    <BodyChip />
+                    <ForBodyChip />
                   </Grid>
                 )}
                 {activity.tags.smallGroups && (
                   <Grid>
-                    <NeutralChip label="небольшие группы" />
+                    <GenericChip label="небольшие группы" />
                   </Grid>
                 )}
                 {activity.tags.nextHouse && (
                   <Grid>
-                    <NeutralChip label="в соседнем доме" />
+                    <GenericChip label="в соседнем доме" />
                   </Grid>
                 )}
               </>
@@ -193,7 +197,7 @@ const ActivityCardVariant: FC<ActivityCardVariantProps> = ({
                   spacing={1}
                 >
                   <Typography noWrap variant="overline">
-                    {formatDay(key)} {formatTime(value)}
+                    {formatActivityDay(key)} {formatActivityTime(value)}
                   </Typography>
                 </Stack>
               ))}
@@ -214,7 +218,7 @@ const ActivityCardVariant: FC<ActivityCardVariantProps> = ({
   );
 };
 
-const NeutralChip = (props: { label: string }) => {
+const GenericChip = (props: { label: string }) => {
   return (
     <Chip
       {...props}
@@ -228,7 +232,7 @@ const NeutralChip = (props: { label: string }) => {
   );
 };
 
-const BodyChip = () => {
+const ForBodyChip = () => {
   return (
     <Chip
       label="для тела"
@@ -242,7 +246,7 @@ const BodyChip = () => {
   );
 };
 
-const SoulChip = () => {
+const ForSoulChip = () => {
   return (
     <Chip
       label="для души"
@@ -257,7 +261,7 @@ const SoulChip = () => {
   );
 };
 
-const MindChip = () => {
+const ForMindChip = () => {
   return (
     <Chip
       label="для ума"
@@ -303,30 +307,3 @@ const NewChip = () => {
     />
   );
 };
-
-function formatDay(day: string) {
-  if (day === "mon") {
-    return "Пн";
-  } else if (day === "tue") {
-    return "Вт";
-  } else if (day === "wed") {
-    return "Ср";
-  } else if (day === "thu") {
-    return "Чт";
-  } else if (day === "fri") {
-    return "Пт";
-  } else if (day === "sat") {
-    return "Сб";
-  } else if (day === "sun") {
-    return "Вс";
-  }
-  return day;
-}
-
-function formatTime(time: string) {
-  return time.replaceAll(" ", "").replaceAll(":", "∶").replaceAll("-", "–");
-}
-
-function formatTitle(title: string) {
-  return title.replace("ОНЛАЙН ", "");
-}

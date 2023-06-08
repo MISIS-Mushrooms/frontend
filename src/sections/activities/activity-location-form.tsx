@@ -4,7 +4,7 @@ import { searchFiltersAtom, userIdentityAtom } from "src/atoms";
 import { ButtonLikeFormControlLabel } from "src/components/button-like-form-control-label";
 import { useMounted } from "src/hooks/use-mounted";
 import { assert } from "src/utils/assert";
-import { formatArea } from "src/utils/format-area";
+import { formatArea } from "src/utils/formatting";
 
 export const ActivityLocationForm = () => {
   const isMounted = useMounted();
