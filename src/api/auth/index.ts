@@ -1,7 +1,7 @@
+import { sleep } from "radash";
 import type { User } from "src/types/user";
 import { createResourceId } from "src/utils/create-resource-id";
 import { decode, JWT_EXPIRES_IN, JWT_SECRET, sign } from "src/utils/jwt";
-import { wait } from "src/utils/wait";
 import { users } from "./data";
 
 const STORAGE_KEY: string = "users";
@@ -63,7 +63,7 @@ class AuthApi {
   async signIn(request: SignInRequest): SignInResponse {
     const { email, password } = request;
 
-    await wait(500);
+    await sleep(500);
 
     return new Promise((resolve, reject) => {
       try {
@@ -94,7 +94,7 @@ class AuthApi {
   async signUp(request: SignUpRequest): SignUpResponse {
     const { email, name, password } = request;
 
-    await wait(1000);
+    await sleep(1000);
 
     return new Promise((resolve, reject) => {
       try {

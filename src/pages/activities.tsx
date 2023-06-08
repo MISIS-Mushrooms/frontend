@@ -8,8 +8,8 @@ import {
   Unstable_Grid2 as Grid,
 } from "@mui/material";
 import { useAtom } from "jotai";
+import NextLink from "next/link";
 import { searchResultsAtom, userIdentityAtom } from "src/atoms";
-import { RouterLink } from "src/components/router-link";
 import { Seo } from "src/components/seo";
 import { TranslucentThemeProvider } from "src/contexts/translucent-theme-provider";
 import { useMounted } from "src/hooks/use-mounted";
@@ -53,7 +53,7 @@ const Page: PageType = () => {
               <Grid>
                 <Button
                   color="primary"
-                  component={RouterLink}
+                  component={NextLink}
                   href={paths.profile}
                   variant="outlined"
                 >
@@ -132,7 +132,7 @@ function ProfileBanner() {
       <Grid container xs={12} sm={5} justifyContent="center">
         <Button
           color="primary"
-          component={RouterLink}
+          component={NextLink}
           href={paths.profile}
           size="large"
           variant="contained"

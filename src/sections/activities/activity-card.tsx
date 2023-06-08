@@ -15,8 +15,8 @@ import {
 import CalendarIcon from "@untitled-ui/icons-react/build/esm/Calendar";
 import MarkerPin04Icon from "@untitled-ui/icons-react/build/esm/MarkerPin04";
 import Image from "next/image";
+import NextLink from "next/link";
 import { FC, Fragment } from "react";
-import { RouterLink } from "src/components/router-link";
 import type { Activity, ActivityVariant } from "src/types/activity";
 import { formatArea } from "../../utils/format-area";
 
@@ -58,7 +58,7 @@ export const ActivityCard: FC<ActivityCardProps> = (props) => {
               <Link
                 variant="h6"
                 color="text.primary"
-                component={RouterLink}
+                component={NextLink}
                 href={"https://www.mos.ru/dolgoletie-app-ts/#"}
               >
                 {activity ? (
@@ -202,7 +202,7 @@ const ActivityCardVariant: FC<ActivityCardVariantProps> = ({
       </Stack>
       <Box flexGrow={1} />
       <Button
-        component={RouterLink}
+        component={NextLink}
         href={"https://www.mos.ru/dolgoletie-app-ts/#"}
         size="large"
         variant={primary ? "contained" : "outlined"}
