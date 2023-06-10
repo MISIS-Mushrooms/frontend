@@ -1,5 +1,6 @@
 import { Button, Card, CardContent, CardHeader, Checkbox } from "@mui/material";
 import { useAtom, useSetAtom } from "jotai";
+import { withImmer } from "jotai-immer";
 import { useRouter } from "next/router";
 import { onboardingAtom, searchFiltersAtom, userIdentityAtom } from "src/atoms";
 import { ButtonLikeFormControlLabel } from "src/components/button-like-form-control-label";
@@ -21,11 +22,11 @@ const ONBOARDING_CATEGORIES = [
 const Page: PageType = () => {
   const router = useRouter();
   const setUserIdentity = useSetAtom(userIdentityAtom);
-  const setSearchFilters = useSetAtom(searchFiltersAtom);
+  const setSearchFilters = useSetAtom(withImmer(searchFiltersAtom));
   const [onboarding, setOnboarding] = useAtom(onboardingAtom);
 
   const handleSkipClick = async () => {
-    router.push(paths.activities);
+    router.push(paths.index);
   };
 
   const handleCheckboxToggle = (event: React.ChangeEvent<HTMLInputElement>) => {

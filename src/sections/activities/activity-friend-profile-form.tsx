@@ -1,22 +1,12 @@
+import { Button, Checkbox, Unstable_Grid2 as Grid } from "@mui/material";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { withImmer } from "jotai-immer";
 import {
-  Button,
-  CardContent,
-  CardHeader,
-  Checkbox,
-  FormHelperText,
-  Stack,
-  TextField,
-  Unstable_Grid2 as Grid,
-} from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
-import { format as formatDate } from "date-fns";
-import { useFormik } from "formik";
-import { useAtom } from "jotai";
-import { activitiesApi } from "src/api/activities";
-import { friendIdentitiesAtom, searchFiltersAtom } from "src/atoms";
+  addFriendDialogOpenAtom,
+  friendIdentitiesAtom,
+  searchFiltersAtom,
+} from "src/atoms";
 import { ButtonLikeFormControlLabel } from "src/components/button-like-form-control-label";
-import { WarningStripes } from "src/components/warning-stripes";
-import Calendar from "src/icons/untitled-ui/duocolor/calendar";
 import { formatPersonName } from "src/utils/formatting";
 import * as Yup from "yup";
 
@@ -90,216 +80,72 @@ const validationSchema = Yup.object({
 });
 
 export const ActivityFriendProfileForm = () => {
-  const [friendIdentities, setFriendIdentities] = useAtom(friendIdentitiesAtom);
-  const [searchFilters, setSearchFilters] = useAtom(searchFiltersAtom);
-
-  const formik = useFormik({
-    initialValues,
-    validationSchema,
-    validateOnBlur: false,
-    validateOnChange: false,
-    onSubmit: async (values, helpers) => {
-      const identityPart = {
-        lastName: values.lastName.trim(),
-        firstName: values.firstName.trim(),
-        middleName: values.middleName.trim() ?? "",
-        dateOfBirth: formatDate(values.dateOfBirth!, "yyyy-MM-dd"),
-      };
-
-      const response = await activitiesApi.identify(identityPart);
-
-      setFriendIdentities((friendIdentities) => ({
-        ...friendIdentities,
-        [response.userId]: {
-          ...identityPart,
-          type: "authenticated",
-          id: response.userId,
-          needOnboarding: response.needOnboarding,
-          areas: response.areas,
-        },
-      }));
-
-      setSearchFilters((prev) => ({
-        ...prev,
-        friendIds: [...prev.friendIds, response.userId],
-      }));
-
-      formik.setValues(initialValues);
-    },
-  });
-
-  const handleRandomizeClick = async () => {
-    const randomIdentity = await activitiesApi.somebody();
-    formik.setValues({
-      ...randomIdentity,
-      dateOfBirth: new Date(randomIdentity.dateOfBirth),
-      healthProblems: false,
-      submit: null,
-    });
-  };
+  const setAddFriendDialogOpen = useSetAtom(addFriendDialogOpenAtom);
+  const friendIdentities = useAtomValue(friendIdentitiesAtom);
+  const [searchFilters, setSearchFilters] = useAtom(
+    withImmer(searchFiltersAtom),
+  );
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const friendId = event.target.name;
-    setSearchFilters((prev) => ({
-      ...prev,
-      friendIds: event.target.checked
-        ? [...prev.friendIds, friendId]
-        : prev.friendIds.filter((id) => id !== friendId),
-    }));
+    setSearchFilters((filters) => {
+      filters.friendIds = event.target.checked
+        ? [...filters.friendIds, friendId]
+        : filters.friendIds.filter((id) => id !== friendId);
+    });
   };
 
   const handleGrandsonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchFilters((prev) => ({
-      ...prev,
-      withGrandson: event.target.checked,
-    }));
+    setSearchFilters((filters) => {
+      filters.withGrandson = event.target.checked;
+    });
   };
 
   return (
-    <>
-      <Grid
-        container
-        component={CardContent}
-        justifyContent={{ xs: "center", sm: "start" }}
-        spacing={{ xs: 0 }}
-        sx={{ pb: 0 }}
-      >
-        <Grid>
+    <Grid
+      container
+      p={1}
+      maxHeight={200}
+      overflow="auto"
+      justifyContent="center"
+    >
+      <Grid>
+        <ButtonLikeFormControlLabel
+          control={
+            <Checkbox
+              color="secondary"
+              checked={searchFilters.withGrandson}
+              onChange={handleGrandsonChange}
+            />
+          }
+          label="С внуком или внучкой"
+        />
+      </Grid>
+      {Object.values(friendIdentities).map((friend) => (
+        <Grid key={friend.id}>
           <ButtonLikeFormControlLabel
             control={
               <Checkbox
-                color="secondary"
-                checked={searchFilters.withGrandson}
-                onChange={handleGrandsonChange}
+                name={friend.id}
+                checked={searchFilters.friendIds.includes(friend.id)}
+                onChange={handleChange}
               />
             }
-            label="С внуком"
-          />
-        </Grid>
-        {Object.values(friendIdentities).map((friend) => (
-          <Grid key={friend.id}>
-            <ButtonLikeFormControlLabel
-              control={
-                <Checkbox
-                  name={friend.id}
-                  checked={searchFilters.friendIds.includes(friend.id)}
-                  onChange={handleChange}
-                />
-              }
-              label={formatPersonName(
+            label={
+              "С " +
+              formatPersonName(
                 friend.lastName,
                 friend.firstName,
-                friend.middleName ?? undefined,
-              )}
-            />
-          </Grid>
-        ))}
-      </Grid>
-      <CardHeader
-        sx={{ pb: 0 }}
-        title="Введите данные человевка, который может составить вам компанию, чтобы мы подобрали занятия, которые понравятся вам обоим"
-      />
-      <CardContent>
-        <form noValidate onSubmit={formik.handleSubmit}>
-          <Stack spacing={2}>
-            <TextField
-              autoFocus
-              error={!!(formik.touched.lastName && formik.errors.lastName)}
-              fullWidth
-              helperText={formik.touched.lastName && formik.errors.lastName}
-              label="Фамилия"
-              name="lastName"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              type="text"
-              value={formik.values.lastName}
-            />
-            <TextField
-              error={!!(formik.touched.firstName && formik.errors.firstName)}
-              fullWidth
-              helperText={formik.touched.firstName && formik.errors.firstName}
-              label="Имя"
-              name="firstName"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              type="text"
-              value={formik.values.firstName}
-            />
-            <TextField
-              error={!!(formik.touched.middleName && formik.errors.middleName)}
-              fullWidth
-              helperText={formik.touched.middleName && formik.errors.middleName}
-              label="Отчество (при наличии)"
-              name="middleName"
-              onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
-              type="text"
-              value={formik.values.middleName}
-            />
-            <DatePicker
-              label="Дата рождения"
-              slots={{
-                openPickerIcon: Calendar,
-              }}
-              slotProps={{
-                textField: {
-                  name: "dateOfBirth",
-                  error: !!(
-                    formik.touched.dateOfBirth && formik.errors.dateOfBirth
-                  ),
-                  helperText:
-                    formik.touched.dateOfBirth &&
-                    formik.errors.dateOfBirth &&
-                    "Укажите дату рождения",
-                  onBlur: formik.handleBlur,
-                },
-              }}
-              value={formik.values.dateOfBirth}
-              onChange={(value) => {
-                formik.setFieldValue("dateOfBirth", value);
-              }}
-              disableFuture
-              disableHighlightToday
-            />
-          </Stack>
-          {formik.errors.submit && (
-            <FormHelperText error sx={{ mt: 3 }}>
-              {formik.errors.submit as string}
-            </FormHelperText>
-          )}
-          <Stack mt={2} spacing={1}>
-            <Button
-              disabled={formik.isSubmitting}
-              fullWidth
-              size="large"
-              type="submit"
-              variant="contained"
-            >
-              Добавить
-            </Button>
-            <Stack position="relative">
-              <WarningStripes
-                sx={{
-                  position: "absolute",
-                  borderRadius: 2,
-                }}
-              />
-              <Button
-                disabled={formik.isSubmitting}
-                fullWidth
-                size="large"
-                variant="outlined"
-                onClick={handleRandomizeClick}
-                sx={{
-                  borderColor: "warning.main",
-                }}
-              >
-                Заполнить случайными данными
-              </Button>
-            </Stack>
-          </Stack>
-        </form>
-      </CardContent>
-    </>
+                friend.middleName,
+                "instrumental",
+              )
+            }
+          />
+        </Grid>
+      ))}
+      <Button onClick={() => setAddFriendDialogOpen(true)}>
+        Добавить друга
+      </Button>
+    </Grid>
   );
 };

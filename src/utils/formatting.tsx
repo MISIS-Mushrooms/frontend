@@ -1,20 +1,37 @@
-export const formatActivityDay = (day: string) => {
+import { incline } from "lvovich";
+import { DeclentionStrT } from "lvovich/lib/inclineRules";
+import { diff, sift } from "radash";
+import { Weekday, WEEKDAYS } from "src/types/weekdays";
+
+export const formatWeekday = (day: Weekday, long?: boolean) => {
   if (day === "mon") {
-    return "Пн";
+    return long ? "Понедельник" : "Пн";
   } else if (day === "tue") {
-    return "Вт";
+    return long ? "Вторник" : "Вт";
   } else if (day === "wed") {
-    return "Ср";
+    return long ? "Среда" : "Ср";
   } else if (day === "thu") {
-    return "Чт";
+    return long ? "Четверг" : "Чт";
   } else if (day === "fri") {
-    return "Пт";
+    return long ? "Пятница" : "Пт";
   } else if (day === "sat") {
-    return "Сб";
+    return long ? "Суббота" : "Сб";
   } else if (day === "sun") {
-    return "Вс";
+    return long ? "Воскресенье" : "Вс";
   }
-  return day;
+};
+
+export const formatWeekdayList = (days: Weekday[]) => {
+  if (days.length === 7) {
+    return;
+  }
+
+  return days.length <= 3
+    ? days.map((d) => formatWeekday(d)).join(", ")
+    : "Кроме " +
+        diff(WEEKDAYS, days)
+          .map((d) => formatWeekday(d))
+          .join(", ");
 };
 
 export const formatActivityTime = (time: string) => {
@@ -26,11 +43,18 @@ export const formatActivityTitle = (title: string) => {
 };
 
 export const formatPersonName = (
-  lastName: string,
-  firstName: string,
-  middleName?: string,
+  last: string | null,
+  first: string,
+  middle: string | null,
+  declension?: DeclentionStrT,
 ) => {
-  return `${lastName} ${firstName}${middleName ? ` ${middleName}` : ""}`;
+  if (declension) {
+    const inclined = incline({ last, first, middle }, declension);
+    if (inclined.last) last = inclined.last;
+    if (inclined.first) first = inclined.first;
+    if (inclined.middle) middle = inclined.middle;
+  }
+  return sift([last, first, middle]).join(" ");
 };
 
 export function formatArea(area: string[], distance?: number) {

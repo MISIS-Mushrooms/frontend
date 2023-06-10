@@ -1,5 +1,5 @@
-import { atom } from "jotai";
-import { atomWithStorage, loadable } from "jotai/utils";
+import { atom, useAtomValue } from "jotai";
+import { atomWithReset, atomWithStorage, loadable } from "jotai/utils";
 import { activitiesApi } from "./api/activities";
 import { Activity } from "./types/activity";
 import { Filters } from "./types/filters";
@@ -10,7 +10,15 @@ enum StorageKey {
   UserIdentity = "userIdentity",
   FriendIdentities = "friendIdentities",
   Onboarding = "onboarding",
+  Likes = "likes",
 }
+
+export const usePreloadStoredAtoms = () => {
+  useAtomValue(userIdentityAtom);
+  useAtomValue(friendIdentitiesAtom);
+  useAtomValue(onboardingAtom);
+  useAtomValue(likesAtom);
+};
 
 export const userIdentityAtom = atomWithStorage<UserIdentity | null>(
   StorageKey.UserIdentity,
@@ -28,7 +36,7 @@ export const onboardingAtom = atomWithStorage<Onboarding>(
   },
 );
 
-export const searchFiltersAtom = atom<Filters>({
+export const searchFiltersAtom = atomWithReset<Filters>({
   query: "",
   friendIds: [],
   healthProblems: false,
@@ -38,6 +46,15 @@ export const searchFiltersAtom = atom<Filters>({
     soul: true,
     mind: true,
     body: true,
+  },
+  days: {
+    mon: true,
+    tue: true,
+    wed: true,
+    thu: true,
+    fri: true,
+    sat: true,
+    sun: true,
   },
   areas: [] as string[],
 });
@@ -53,9 +70,17 @@ export const searchResultsAtom = loadable(
       userId: userIdentity.type === "anonymous" ? "demo" : userIdentity.id,
       filters,
       onboarding,
+      ratings: {},
       return_variants: true,
     });
 
     return response.items;
   }),
 );
+
+export const likesAtom = atomWithStorage<Record<string, "liked" | "disliked">>(
+  StorageKey.Likes,
+  {},
+);
+
+export const addFriendDialogOpenAtom = atom(false);

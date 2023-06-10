@@ -1,3 +1,5 @@
+import { Weekday } from "./weekdays";
+
 export type Filters = {
   query: string;
   friendIds: string[];
@@ -8,6 +10,9 @@ export type Filters = {
     soul: boolean;
     mind: boolean;
     body: boolean;
+  };
+  days: {
+    [weekday in Weekday]: boolean;
   };
   areas: string[];
 };

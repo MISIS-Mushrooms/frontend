@@ -8,22 +8,30 @@ import {
   Link,
   Skeleton,
   Stack,
+  styled,
   SvgIcon,
   Typography,
   Unstable_Grid2 as Grid,
 } from "@mui/material";
 import CalendarIcon from "@untitled-ui/icons-react/build/esm/Calendar";
+import ChevronDownIcon from "@untitled-ui/icons-react/build/esm/ChevronDown";
 import MarkerPin04Icon from "@untitled-ui/icons-react/build/esm/MarkerPin04";
 import Image from "next/image";
 import NextLink from "next/link";
 import { FC, Fragment } from "react";
 import type { Activity, ActivityVariant } from "src/types/activity";
+import { objectEntries } from "ts-extras";
 import {
-  formatActivityDay,
   formatActivityTime,
   formatActivityTitle,
   formatArea,
+  formatWeekday,
 } from "../../utils/formatting";
+
+const GAP = 1;
+const VARIANTS_DISPLAYED = 2;
+const IMAGE_WIDTH = 200;
+const IMAGE_ASPECT_RATIO = 2 / 3;
 
 interface ActivityCardProps {
   activity?: Activity;
@@ -32,30 +40,45 @@ interface ActivityCardProps {
 export const ActivityCard: FC<ActivityCardProps> = (props) => {
   const { activity, ...other } = props;
 
+  const variants = activity?.variants;
+  const showShowMore = variants && variants.length > VARIANTS_DISPLAYED;
+
   return (
-    <Stack component={Card} direction="row" {...other}>
+    <Stack
+      component={Card}
+      direction="row"
+      /* {...(activity?.tags.promo && {
+        border: 2,
+        borderColor: "#fdc83080",
+      })} */
+      {...other}
+    >
       {activity ? (
-        <Image
+        <ActivityCardImage
           src={`/assets/activities/${formatActivityTitle(
             activity.category3,
           ).replaceAll("/", "_")}.png`}
-          width={200}
-          height={100}
-          style={{ objectFit: "cover" }}
+          width={IMAGE_WIDTH}
+          height={IMAGE_WIDTH / IMAGE_ASPECT_RATIO}
           alt={activity.category3}
         />
       ) : (
         <Skeleton
           animation="wave"
           variant="rectangular"
-          width={250}
+          width={200}
           height="auto"
         />
       )}
       <CardContent
-        sx={{ width: "100%", px: 4, py: 4, "&:last-child": { pb: 4 } }}
+        sx={{
+          width: "100%",
+          px: 4,
+          py: 4,
+          "&:last-child": { pb: showShowMore ? GAP : 4 },
+        }}
       >
-        <Stack spacing={1}>
+        <Stack spacing={GAP}>
           <Grid container gap={1} rowGap={0}>
             {/* Title */}
             <Grid xs={12}>
@@ -76,6 +99,11 @@ export const ActivityCard: FC<ActivityCardProps> = (props) => {
             {/* Chips */}
             {activity ? (
               <>
+                {activity.tags.promo && (
+                  <Grid>
+                    <PromoChip />
+                  </Grid>
+                )}
                 {activity.tags.new && (
                   <Grid>
                     <NewChip />
@@ -133,17 +161,39 @@ export const ActivityCard: FC<ActivityCardProps> = (props) => {
             )}
           </Typography>
 
-          {activity ? (
-            activity.variants.slice(0, 2).map((variant, idx) => (
-              <Fragment key={variant.id}>
-                {idx > 0 && <Divider sx={{ my: 2 }} />}
-                <ActivityCardVariant
-                  variant={variant}
-                  primary={idx === 0}
-                  online={activity.tags.online}
-                />
-              </Fragment>
-            ))
+          {variants ? (
+            <>
+              {variants.slice(0, 2).map((variant, idx) => (
+                <Fragment key={variant.id}>
+                  {idx > 0 && <Divider sx={{ my: 2 }} />}
+                  <ActivityCardVariant
+                    variant={variant}
+                    primary={idx === 0}
+                    online={activity.tags.online}
+                  />
+                </Fragment>
+              ))}
+              {variants.length > 2 && (
+                <>
+                  <Divider />
+                  <Button
+                    color="inherit"
+                    component={NextLink}
+                    href={"https://www.mos.ru/dolgoletie-app-ts/#"}
+                    sx={{
+                      justifyContent: "flex-start",
+                    }}
+                    endIcon={
+                      <SvgIcon>
+                        <ChevronDownIcon />
+                      </SvgIcon>
+                    }
+                  >
+                    Ещё группы
+                  </Button>
+                </>
+              )}
+            </>
           ) : (
             <Skeleton animation="wave" width={200} height={85} />
           )}
@@ -186,8 +236,8 @@ const ActivityCardVariant: FC<ActivityCardVariantProps> = ({
             <CalendarIcon />
           </SvgIcon>
           <Stack>
-            {Object.entries(variant.timetable)
-              .filter(([, value]) => value !== "нет")
+            {objectEntries(variant.timetable)
+              .filter(([, value]) => value && value !== "нет")
               .map(([key, value]) => (
                 <Stack
                   key={key}
@@ -197,7 +247,7 @@ const ActivityCardVariant: FC<ActivityCardVariantProps> = ({
                   spacing={1}
                 >
                   <Typography noWrap variant="overline">
-                    {formatActivityDay(key)} {formatActivityTime(value)}
+                    {formatWeekday(key)} {formatActivityTime(value!)}
                   </Typography>
                 </Stack>
               ))}
@@ -217,6 +267,11 @@ const ActivityCardVariant: FC<ActivityCardVariantProps> = ({
     </Grid>
   );
 };
+
+const ActivityCardImage = styled(Image)(({ theme }) => ({
+  objectFit: "cover",
+  minWidth: IMAGE_WIDTH,
+}));
 
 const GenericChip = (props: { label: string }) => {
   return (
@@ -269,6 +324,19 @@ const ForMindChip = () => {
         backgroundImage: (theme) =>
           `linear-gradient(90deg, ${theme.palette.warning.light} 0%, ${theme.palette.warning.lightest} 100%)`,
         color: "warning.darkest",
+      }}
+      size="small"
+    />
+  );
+};
+
+const PromoChip = () => {
+  return (
+    <Chip
+      label="промо"
+      sx={{
+        color: "black",
+        backgroundImage: "linear-gradient(to right, #fdc830, #f37335)",
       }}
       size="small"
     />

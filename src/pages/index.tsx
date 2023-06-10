@@ -7,28 +7,34 @@ import {
   Typography,
   Unstable_Grid2 as Grid,
 } from "@mui/material";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import NextLink from "next/link";
+import { useEffect, useState } from "react";
 import { searchResultsAtom, userIdentityAtom } from "src/atoms";
 import { Seo } from "src/components/seo";
 import { TranslucentThemeProvider } from "src/contexts/translucent-theme-provider";
-import { useMounted } from "src/hooks/use-mounted";
 import { MainLayout } from "src/layouts/main";
 import { paths } from "src/paths";
 import { ActivityCard } from "src/sections/activities/activity-card";
 import { ActivityListSearch } from "src/sections/activities/activity-list-search";
 import type { Page as PageType } from "src/types/page";
 import { assert } from "src/utils/assert";
+import { formatPersonName } from "src/utils/formatting";
 
 const Page: PageType = () => {
-  const isMounted = useMounted();
-  const [userIdentity] = useAtom(userIdentityAtom);
-  const [activities] = useAtom(searchResultsAtom);
+  const userIdentity = useAtomValue(userIdentityAtom);
+  const activities = useAtomValue(searchResultsAtom);
 
-  if (!isMounted()) {
-    return null;
-  }
+  const [firstLoading, setFirstLoading] = useState(true);
+
+  useEffect(() => {
+    if (activities.state === "hasData") {
+      setFirstLoading(false);
+    }
+  }, [activities.state]);
+
   assert(userIdentity);
+  const { firstName, middleName } = userIdentity;
 
   return (
     <>
@@ -43,24 +49,11 @@ const Page: PageType = () => {
           {userIdentity.type !== "authenticated" ? (
             <ProfileBanner />
           ) : (
-            <Grid container alignItems="center" spacing={2}>
-              <Grid flex={1}>
-                <Typography variant="h6">
-                  {userIdentity.firstName} {userIdentity.middleName ?? ""}, вот
-                  занятия, которые могут вам понравиться
-                </Typography>
-              </Grid>
-              <Grid>
-                <Button
-                  color="primary"
-                  component={NextLink}
-                  href={paths.profile}
-                  variant="outlined"
-                >
-                  Сменить пользователя
-                </Button>
-              </Grid>
-            </Grid>
+            <Typography variant="h6">
+              {formatPersonName(null, firstName, middleName)},{" "}
+              {firstLoading ? "сейчас мы найдём " : "вот "}
+              занятия, которые могут вам понравиться
+            </Typography>
           )}
           <Stack spacing={4} sx={{ mt: 4 }}>
             <Box
@@ -133,7 +126,7 @@ function ProfileBanner() {
         <Button
           color="primary"
           component={NextLink}
-          href={paths.profile}
+          href={paths.login}
           size="large"
           variant="contained"
           sx={{ px: 5, py: 2, mt: { xs: 2, sm: 0 } }}

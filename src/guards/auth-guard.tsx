@@ -18,7 +18,7 @@ export const AuthGuard: FC<AuthGuardProps> = (props) => {
 
   const check = useCallback(() => {
     if (!userIdentity) {
-      router.replace(paths.profile);
+      router.replace(paths.login);
     } else {
       setChecked(true);
     }

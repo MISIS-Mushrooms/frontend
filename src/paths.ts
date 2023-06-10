@@ -1,6 +1,6 @@
 export const paths = {
   index: "/",
-  profile: "/profile",
+  login: "/login",
   onboarding: "/onboarding",
-  activities: "/activities",
+  account: "/account",
 };

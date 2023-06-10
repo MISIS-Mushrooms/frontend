@@ -1,3 +1,5 @@
+import { Weekday } from "./weekdays";
+
 export type Activity = {
   id: string;
   description: string;
@@ -9,6 +11,7 @@ export type Activity = {
 };
 
 export type ActivityTags = {
+  promo: boolean;
   online: boolean;
   category: "mind" | "soul" | "body";
   smallGroups: boolean;
@@ -24,11 +27,5 @@ export type ActivityVariant = {
 };
 
 export type ActivityVariantTimetable = {
-  mon?: string;
-  tue?: string;
-  wed?: string;
-  thu?: string;
-  fri?: string;
-  sat?: string;
-  sun?: string;
+  [weekday in Weekday]?: string;
 };

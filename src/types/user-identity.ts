@@ -1,3 +1,5 @@
+import { Activity } from "./activity";
+
 export type UserIdentity = {
   type: "authenticated" | "anonymous";
   id: string;
@@ -7,4 +9,13 @@ export type UserIdentity = {
   dateOfBirth: string;
   needOnboarding: boolean;
   areas: string[];
+  history: (Pick<
+    Activity,
+    "id" | "category1" | "category2" | "category3" | "description"
+  > & {
+    variant: {
+      id: string;
+      visitedAt: string;
+    };
+  })[];
 };

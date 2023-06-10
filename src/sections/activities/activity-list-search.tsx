@@ -1,5 +1,6 @@
 import {
   Button,
+  ButtonProps,
   Card,
   Checkbox,
   Divider,
@@ -10,19 +11,41 @@ import {
   Unstable_Grid2 as Grid,
 } from "@mui/material";
 import ChevronDownIcon from "@untitled-ui/icons-react/build/esm/ChevronDown";
+import ChevronUpIcon from "@untitled-ui/icons-react/build/esm/ChevronUp";
 import SearchMdIcon from "@untitled-ui/icons-react/build/esm/SearchMd";
-import { useAtom } from "jotai";
+import UserIcon from "@untitled-ui/icons-react/build/esm/User02";
+import { useAtom, useSetAtom } from "jotai";
+import { withImmer } from "jotai-immer";
 import { throttle } from "radash";
-import { FC, useMemo, useState } from "react";
-import { searchFiltersAtom } from "src/atoms";
+import { FC, ReactNode, useMemo, useState } from "react";
+import { addFriendDialogOpenAtom, searchFiltersAtom } from "src/atoms";
+import { formatWeekdayList } from "src/utils/formatting";
+import { pluralizeRussianNoun } from "src/utils/pluralize-russian";
+import { objectEntries } from "ts-extras";
 import { ButtonLikeFormControlLabel } from "../../components/button-like-form-control-label";
 import { ActivityFriendProfileForm } from "./activity-friend-profile-form";
 import { ActivityLocationForm } from "./activity-location-form";
+import { ActivityWeekdaysForm } from "./activity-weekdays-form";
 
 export const ActivityListSearch: FC<{ sx?: SxProps }> = (props) => {
-  const [searchFilters, setSearchFilters] = useAtom(searchFiltersAtom);
+  const [searchFilters, setSearchFilters] = useAtom(
+    withImmer(searchFiltersAtom),
+  );
   const [query, setQuery] = useState(searchFilters.query);
-  const [openForm, setOpenForm] = useState<null | "friends" | "location">(null);
+
+  const setAddFriendDialogOpen = useSetAtom(addFriendDialogOpenAtom);
+  const [openForm, setOpenForm] = useState<
+    null | "weekdays" | "friends" | "location"
+  >(null);
+
+  const peopleCount =
+    searchFilters.friendIds.length + (searchFilters.withGrandson ? 1 : 0);
+
+  const weekdayList = objectEntries(searchFilters.days)
+    .filter(([_, enabled]) => enabled)
+    .map(([weekday]) => weekday);
+
+  const areaCount = searchFilters.areas.length;
 
   const updateSearchFilterQuery = useMemo(
     () =>
@@ -59,18 +82,11 @@ export const ActivityListSearch: FC<{ sx?: SxProps }> = (props) => {
     }));
   };
 
-  const handleFriendsClick = () => {
-    if (openForm === "friends") {
+  const toggleForm = (form: "weekdays" | "friends" | "location") => {
+    if (openForm === form) {
       setOpenForm(null);
     } else {
-      setOpenForm("friends");
-    }
-  };
-  const handleLocationClick = () => {
-    if (openForm === "location") {
-      setOpenForm(null);
-    } else {
-      setOpenForm("location");
+      setOpenForm(form);
     }
   };
 
@@ -93,7 +109,7 @@ export const ActivityListSearch: FC<{ sx?: SxProps }> = (props) => {
       <Grid
         container
         justifyContent={{ xs: "center", sm: "start" }}
-        spacing={{ xs: 1, sm: 2 }}
+        spacing={{ xs: 1, sm: 1.5 }}
         sx={{ px: 2, py: 1, userSelect: "none" }}
       >
         <Grid>
@@ -173,35 +189,75 @@ export const ActivityListSearch: FC<{ sx?: SxProps }> = (props) => {
           />
         </Grid>
         <Grid>
-          <Button
-            color="inherit"
-            onClick={handleFriendsClick}
-            endIcon={
-              <SvgIcon>
-                <ChevronDownIcon />
-              </SvgIcon>
-            }
+          <DropdownButton
+            open={openForm === "friends"}
+            onClick={() => toggleForm("friends")}
           >
-            Хочу посещать вместе с...
-          </Button>
+            Вместе с{" "}
+            {peopleCount ? (
+              <>
+                <SvgIcon fontSize="small" sx={{ ml: 0.5 }}>
+                  <UserIcon />
+                </SvgIcon>{" "}
+                {peopleCount}
+              </>
+            ) : (
+              "..."
+            )}
+          </DropdownButton>
         </Grid>
         <Grid>
-          <Button
-            color="inherit"
-            onClick={handleLocationClick}
-            endIcon={
-              <SvgIcon>
-                <ChevronDownIcon />
-              </SvgIcon>
-            }
+          <DropdownButton
+            open={openForm === "weekdays"}
+            onClick={() => toggleForm("weekdays")}
           >
-            Район
-          </Button>
+            {formatWeekdayList(weekdayList) ?? "Дни недели"}
+          </DropdownButton>
+        </Grid>
+        <Grid>
+          <DropdownButton
+            open={openForm === "location"}
+            onClick={() => toggleForm("location")}
+          >
+            {areaCount > 0
+              ? `${areaCount} район${pluralizeRussianNoun(
+                  areaCount,
+                  "",
+                  "а",
+                  "ов",
+                )}`
+              : `Районы`}
+          </DropdownButton>
         </Grid>
       </Grid>
       {openForm !== null && <Divider />}
+      {openForm === "weekdays" && <ActivityWeekdaysForm />}
       {openForm === "friends" && <ActivityFriendProfileForm />}
       {openForm === "location" && <ActivityLocationForm />}
     </Card>
+  );
+};
+
+type DropdownButtonProps = ButtonProps & {
+  open: boolean;
+  onClick: () => void;
+  children: ReactNode;
+};
+
+const DropdownButton: FC<DropdownButtonProps> = ({
+  open,
+  onClick,
+  children,
+}) => {
+  return (
+    <Button
+      color="inherit"
+      onClick={onClick}
+      endIcon={
+        <SvgIcon>{open ? <ChevronUpIcon /> : <ChevronDownIcon />}</SvgIcon>
+      }
+    >
+      {children}
+    </Button>
   );
 };

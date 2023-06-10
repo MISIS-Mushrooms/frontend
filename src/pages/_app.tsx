@@ -20,6 +20,8 @@ import { createEmotionCache } from "src/utils/create-emotion-cache";
 import "../styles/globals.css";
 // Remove if simplebar is not used
 import "simplebar-react/dist/simplebar.min.css";
+import { usePreloadStoredAtoms } from "src/atoms";
+import { AddFriendDialog } from "src/sections/add-friend-dialog";
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -27,6 +29,7 @@ const App = (props: AppProps) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
   useNProgress();
+  usePreloadStoredAtoms();
 
   const getLayout = Component.getLayout ?? ((page) => page);
 
@@ -82,6 +85,7 @@ const App = (props: AppProps) => {
                             getLayout(<Component {...pageProps} />)
                           )}
                           <Toaster />
+                          <AddFriendDialog />
                         </RTL>
                       </ThemeProvider>
                     );

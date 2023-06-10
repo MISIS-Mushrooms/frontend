@@ -13,10 +13,6 @@ const config = {
   async rewrites() {
     return [
       {
-        source: "/",
-        destination: `/activities`,
-      },
-      {
         source: "/api/:path*",
         destination: `${API_URL}/:path*`,
       },

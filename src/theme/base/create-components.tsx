@@ -25,10 +25,7 @@ export const createComponents = (): Components => {
           textTransform: "none",
         },
         outlined: {
-          borderWidth: "2px",
-          "&:hover": {
-            borderWidth: "2px",
-          },
+          borderWidth: "2px !important",
         },
         sizeSmall: {
           padding: "6px 16px",
